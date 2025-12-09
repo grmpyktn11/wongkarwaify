@@ -62,8 +62,9 @@ def analyzeFrames(frameFolder):
 if __name__ == "__main__":
     ITML = r"frameITMFL"
     FA = r"frameFA"
-    stats = analyzeFrames(ITML)
+    # stats = analyzeFrames(ITML)
     # stats = analyzeFrames(FA)
+    def stylizeImage(inputImg, movieStats):
 
     print("\n=== FINAL RESULTS ===")
     print(stats)

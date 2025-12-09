@@ -1,0 +1,14 @@
+{
+    "fa": {
+        "avgRoverGray": 1.2716556956716099,
+        "avgBoverGray": 0.7127071354304632,
+        "meanSaturation": 127.1547255529224,
+        "estimatedGamma": 0.37692317364228484
+    },
+    "ml": {
+        "avgRoverGray": 1.4045581070861426,
+        "avgBoverGray": 0.546157767492171,
+        "meanSaturation": 165.19602146585996,
+        "estimatedGamma": 0.377189267651251
+    }
+}
