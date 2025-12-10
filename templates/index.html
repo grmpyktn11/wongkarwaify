@@ -1,28 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Movie Stylizer</title>
+
+    <style>
+        body {
+            background: #0f0a09;
+            margin: 0;
+            padding: 60px 0;
+            font-family: "Georgia", serif;
+            color: #FFE9C8;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background: #BA0101;
+            border: 2px solid #E99D25;
+            border-radius: 8px;
+            padding: 32px 40px;
+            width: 420px;
+            box-shadow: 0 0 40px rgba(186,1,1,0.4);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 30px;
+            font-weight: 600;
+            color: #FFE9C8;
+            letter-spacing: 1px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border-radius: 4px;
+            border: 1px solid #E99D25;
+            background: rgba(0,0,0,0.25);
+            color: #FFE9C8;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 0;
+            border: 2px solid #E99D25;
+            background: #E99D25;
+            color: #0f0a09;
+            font-weight: 700;
+            font-size: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #FFD279;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 35px;
+        }
+
+        a {
+            color: #FFE9C8;
+            text-decoration: underline;
+        }
+
+        img {
+            margin-top: 16px;
+            border-radius: 6px;
+            max-width: 100%;
+            border: 2px solid #E99D25;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Movie Stylizer</h1>
+    <div class="card">
+        <h1>Movie Stylizer</h1>
 
-    <form method="POST" enctype="multipart/form-data">
-        <label>Select image:</label><br>
-        <input type="file" name="file" required><br><br>
+        <form method="POST" enctype="multipart/form-data">
 
-        <label>Select movie style:</label><br>
-        <select name="movie">
-            <option value="fa">Fallen Angels</option>
-            <option value="ml">In The Mood For Love</option>
-        </select><br><br>
+            <label>Select image:</label>
+            <input type="file" name="file" required>
 
-        <button type="submit">Apply Style</button>
-    </form>
+            <label>Select movie style:</label>
+            <select name="movie">
+                <option value="fa">Fallen Angels</option>
+                <option value="ml">In The Mood For Love</option>
+            </select>
 
-    {% if done %}
-        <h3>Styled result ready!</h3>
-        <a href="/download">Download image</a><br><br>
-        <img src="/static/styled.jpg" width="400">
-    {% endif %}
+            <button type="submit">Apply Style</button>
+        </form>
+
+        {% if done %}
+        <div class="result">
+            <h3>Styled image ready!</h3>
+            <a href="/download">Download image</a><br>
+            <img src="/static/styled.jpg" width="400">
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>

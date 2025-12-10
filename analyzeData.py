@@ -59,12 +59,12 @@ def analyzeFrames(frameFolder):
         "estimatedGamma": float(np.mean(gammaVals)),
     }
 
-if __name__ == "__main__":
-    ITML = r"frameITMFL"
-    FA = r"frameFA"
-    # stats = analyzeFrames(ITML)
-    # stats = analyzeFrames(FA)
-    def stylizeImage(inputImg, movieStats):
+# if __name__ == "__main__":
+#     ITML = r"frameITMFL"
+#     FA = r"frameFA"
+#     # stats = analyzeFrames(ITML)
+#     # stats = analyzeFrames(FA)
+#     def stylizeImage(inputImg, movieStats):
 
-    print("\n=== FINAL RESULTS ===")
-    print(stats)
+#     print("\n=== FINAL RESULTS ===")
+#     print(stats)
