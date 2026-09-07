@@ -1,0 +1,17 @@
+# The two source films are 3.4 GB between them and the sampled frames another
+# 200 MB. movie_stats.json already holds everything the app reads from them, so
+# none of it belongs in a build context.
+*.mp4
+frameFA/
+frameITMFL/
+testInputs/
+testphotos/
+
+# Generated results - the image is built with an empty static/out.
+static/out/
+
+.git/
+.gitignore
+.venv/
+__pycache__/
+*.pyc
