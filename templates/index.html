@@ -1,118 +1,476 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-film="{{ film or 'ml' }}">
 <head>
-    <meta charset="UTF-8">
-    <title>Movie Stylizer</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WKW-ify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Noto+Serif+HK:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ---------------------------------------------------------------
+   A Hong Kong signboard, not a dashboard. Flat printed colour and
+   hard corners, the way an enamel shop sign or a lobby card was
+   actually made -- the only glow in the document is on the vertical
+   neon strip, because that is the one part of a real signboard that
+   was a lit tube. The selected film repaints everything, including
+   which title hangs on the sign.
+   --------------------------------------------------------------- */
+:root{
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
 
-    <style>
-        body {
-            background: #0f0a09;
-            margin: 0;
-            padding: 60px 0;
-            font-family: "Georgia", serif;
-            color: #FFE9C8;
-            display: flex;
-            justify-content: center;
-        }
+  --poster:"Anton","Haettenschweiler","Arial Narrow",sans-serif;
+  --font:"Archivo","Helvetica Neue",system-ui,sans-serif;
+  --hk:"Noto Serif HK","Noto Serif TC","PMingLiU","Songti TC",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 
-        .card {
-            background: #BA0101;
-            border: 2px solid #E99D25;
-            border-radius: 8px;
-            padding: 32px 40px;
-            width: 420px;
-            box-shadow: 0 0 40px rgba(186,1,1,0.4);
-        }
+  /* 花樣年華 -- lacquer red and tungsten gold on soy-black */
+  --ground:#0e0a07;
+  --panel:#17100a;
+  --neon:#d8332e;
+  --neon-2:#e9a319;
+  --ink:#f0e2c4;
+  --ink-muted:#94795a;
+  --line:#33230f;
 
-        h1 {
-            text-align: center;
-            margin-bottom: 24px;
-            font-size: 30px;
-            font-weight: 600;
-            color: #FFE9C8;
-            letter-spacing: 1px;
-        }
+  color-scheme:dark;
+}
+:root[data-film="fa"]{
+  /* 墮落天使 -- mahjong-parlour jade and printer's magenta */
+  --ground:#060a0a;
+  --panel:#0e1513;
+  --neon:#16a97c;
+  --neon-2:#e23e6b;
+  --ink:#e4eee8;
+  --ink-muted:#6f877e;
+  --line:#1b2a26;
+}
 
-        label {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 6px;
-            display: block;
-        }
+*{box-sizing:border-box}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
-        input[type="file"],
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 18px;
-            border-radius: 4px;
-            border: 1px solid #E99D25;
-            background: rgba(0,0,0,0.25);
-            color: #FFE9C8;
-            font-size: 14px;
-        }
+body{
+  margin:0;min-height:100vh;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--font);
+  font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;align-items:flex-start;
+  padding:clamp(12px,3vw,44px);
+  transition:background .4s ease,color .4s ease;
+}
+:focus-visible{outline:3px solid var(--neon-2);outline-offset:2px}
 
-        button {
-            width: 100%;
-            padding: 12px 0;
-            border: 2px solid #E99D25;
-            background: #E99D25;
-            color: #0f0a09;
-            font-weight: 700;
-            font-size: 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            letter-spacing: 1px;
-        }
+/* ---- the board: sign strip + plate ---- */
+.stack{width:100%;max-width:1140px;display:grid;gap:clamp(16px,2.5vw,28px)}
 
-        button:hover {
-            background: #FFD279;
-        }
+.board{
+  width:100%;
+  display:grid;grid-template-columns:72px minmax(0,1fr);
+  border:3px solid var(--line);
+  transition:border-color .4s ease;
+}
+@media (max-width:820px){.board{grid-template-columns:minmax(0,1fr)}}
 
-        .result {
-            text-align: center;
-            margin-top: 35px;
-        }
+/* The vertical hanging sign. The one lit thing on the page. */
+.signboard{
+  background:var(--neon);
+  border-right:3px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:var(--sp-5) 0;gap:var(--sp-5);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.22), 0 0 36px -14px var(--neon);
+  transition:background .4s ease,border-color .4s ease,box-shadow .4s ease;
+}
+@media (max-width:820px){
+  .signboard{
+    flex-direction:row;border-right:0;border-bottom:3px solid var(--line);
+    padding:var(--sp-3) var(--sp-4);
+  }
+}
+.cn{
+  font-family:var(--hk);font-weight:700;
+  font-size:1.72rem;line-height:1.18;letter-spacing:.18em;
+  writing-mode:vertical-rl;
+  color:var(--ground);
+  display:none;
+}
+@media (max-width:820px){.cn{writing-mode:horizontal-tb;letter-spacing:.24em;font-size:1.3rem}}
+:root[data-film="ml"] .cn[data-for="ml"]{display:block}
+:root[data-film="fa"] .cn[data-for="fa"]{display:block}
 
-        a {
-            color: #FFE9C8;
-            text-decoration: underline;
-        }
+/* A chop mark: the frame count, stamped. */
+.seal{
+  font-family:var(--mono);font-size:.62rem;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;
+  writing-mode:vertical-rl;
+  color:var(--ground);
+  border:2px solid var(--ground);
+  padding:var(--sp-3) var(--sp-1);
+}
+@media (max-width:820px){.seal{writing-mode:horizontal-tb;padding:var(--sp-1) var(--sp-3)}}
 
-        img {
-            margin-top: 16px;
-            border-radius: 6px;
-            max-width: 100%;
-            border: 2px solid #E99D25;
-        }
-    </style>
+.plate{
+  background:var(--panel);
+  padding:clamp(18px,3vw,40px);
+  transition:background .4s ease;
+}
+
+/* ---- masthead ---- */
+.masthead{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:var(--sp-4);flex-wrap:wrap;
+  padding-bottom:var(--sp-4);margin-bottom:var(--sp-6);
+  /* a printed double rule */
+  border-bottom:3px solid var(--neon);
+  box-shadow:0 3px 0 0 var(--panel), 0 6px 0 0 var(--line);
+}
+h1{
+  font-family:var(--poster);font-weight:400;
+  font-size:clamp(3rem,9.5vw,6rem);line-height:.86;
+  letter-spacing:.01em;text-transform:uppercase;
+  margin:0;color:var(--ink);
+}
+h1 b{color:var(--neon-2);font-weight:400;transition:color .4s ease}
+.byline{text-align:right}
+.byline .name{font-family:var(--hk);font-weight:500;font-size:1.5rem;letter-spacing:.14em;display:block;color:var(--ink)}
+.byline .rom{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-muted);display:block;margin-top:var(--sp-1)}
+
+/* ---- layout ---- */
+.cols{display:grid;grid-template-columns:320px minmax(0,1fr);gap:clamp(20px,3vw,40px);align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+
+fieldset{border:0;padding:0;margin:0}
+.field{margin-bottom:var(--sp-6)}
+legend,.label{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-muted);padding:0;margin:0 0 var(--sp-3);display:block;
+}
+
+/* ---- film picker: enamel plates. Selected one is printed solid. ---- */
+.films{display:grid;gap:var(--sp-2)}
+.film{
+  display:flex;align-items:center;gap:var(--sp-4);
+  cursor:pointer;position:relative;
+  border:2px solid var(--line);
+  background:transparent;
+  padding:var(--sp-3) var(--sp-4);
+  transition:border-color .18s ease,background .18s ease;
+}
+.film input{position:absolute;opacity:0;width:0;height:0}
+.film .zh{font-family:var(--hk);font-weight:700;font-size:1.5rem;line-height:1;letter-spacing:.06em;color:var(--ink-muted);transition:color .18s ease;white-space:nowrap}
+.film .en{font-family:var(--poster);text-transform:uppercase;font-size:1.02rem;line-height:1.05;letter-spacing:.02em;color:var(--ink-muted);transition:color .18s ease}
+.film .yr{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--ink-muted);display:block;margin-top:3px;transition:color .18s ease}
+.film:hover{border-color:var(--ink-muted)}
+.film:has(input:checked){background:var(--neon);border-color:var(--neon)}
+.film:has(input:checked) .zh,
+.film:has(input:checked) .en,
+.film:has(input:checked) .yr{color:var(--ground)}
+.film:has(input:focus-visible){outline:3px solid var(--neon-2);outline-offset:2px}
+
+/* ---- file ---- */
+.drop{
+  display:block;cursor:pointer;text-align:center;
+  border:2px dashed var(--line);
+  padding:var(--sp-5) var(--sp-4);
+  transition:border-color .18s ease;
+}
+.drop:hover{border-color:var(--neon-2)}
+.drop input{position:absolute;opacity:0;width:0;height:0}
+.drop .fname{display:block;font-weight:600;font-size:.92rem;color:var(--ink);word-break:break-all}
+.drop .hint{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-muted);margin-top:var(--sp-2)}
+
+/* ---- submit: a stamped ticket ---- */
+button[type=submit]{
+  width:100%;font-family:var(--poster);font-weight:400;
+  font-size:1.28rem;letter-spacing:.06em;text-transform:uppercase;
+  border:3px solid var(--neon-2);
+  background:var(--neon-2);
+  color:var(--ground);
+  padding:var(--sp-3) var(--sp-5) 10px;
+  cursor:pointer;
+  transition:background .18s ease,color .18s ease,transform .1s ease;
+}
+button[type=submit]:hover{background:transparent;color:var(--neon-2)}
+button[type=submit]:active{transform:translateY(2px)}
+
+/* ---- result: lobby cards ---- */
+.result{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+@media (max-width:520px){.result{grid-template-columns:1fr}}
+.pane img{display:block;width:100%;height:auto;border:2px solid var(--line)}
+.pane.after img{border-color:var(--neon)}
+.cap{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-muted);margin-top:var(--sp-2);display:block;
+}
+.pane.after .cap{color:var(--neon)}
+.download{
+  grid-column:1/-1;margin-top:var(--sp-1);
+  display:block;text-align:center;text-decoration:none;
+  font-family:var(--poster);font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;
+  border:2px solid var(--ink);color:var(--ink);
+  padding:10px var(--sp-5) 7px;
+  transition:background .18s ease,color .18s ease;
+}
+.download:hover{background:var(--ink);color:var(--ground)}
+
+.empty{
+  border:2px dashed var(--line);
+  aspect-ratio:3/2;display:grid;place-items:center;
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ink-muted);
+}
+
+/* ---- programme notes ---- */
+.notes{
+  border:3px solid var(--line);
+  background:var(--panel);
+  padding:clamp(20px,3vw,44px);
+  transition:border-color .4s ease,background .4s ease;
+}
+.notes-head{
+  padding-bottom:var(--sp-4);margin-bottom:var(--sp-5);
+  border-bottom:3px solid var(--neon-2);
+  box-shadow:0 3px 0 0 var(--panel), 0 6px 0 0 var(--line);
+}
+.notes h2{
+  font-family:var(--poster);font-weight:400;
+  font-size:clamp(1.9rem,4.5vw,2.9rem);line-height:.92;
+  text-transform:uppercase;letter-spacing:.02em;
+  margin:0 0 var(--sp-2);color:var(--ink);
+}
+.notes-sub{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-muted);margin:0;
+}
+.notes-intro{max-width:66ch;color:var(--ink);margin:0 0 var(--sp-6);font-size:1rem;line-height:1.6}
+
+.measured{overflow-x:auto;border:2px solid var(--line);margin-bottom:var(--sp-6)}
+.measured table{border-collapse:collapse;width:100%;min-width:540px;font-size:.86rem}
+.measured caption{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ground);background:var(--neon);padding:var(--sp-2) var(--sp-4);text-align:left;
+  transition:background .4s ease,color .4s ease;
+}
+.measured th,.measured td{text-align:left;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--line)}
+.measured thead th{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-muted);font-weight:500;
+}
+.measured thead th:nth-child(2),.measured thead th:nth-child(3){
+  font-family:var(--hk);font-size:.95rem;letter-spacing:.08em;text-transform:none;color:var(--ink);font-weight:700;
+}
+.measured tbody td:first-child{font-family:var(--mono);font-size:.78rem;color:var(--ink)}
+.measured tbody td:nth-child(2),.measured tbody td:nth-child(3){
+  font-family:var(--mono);font-size:.82rem;color:var(--neon-2);
+  font-variant-numeric:tabular-nums;transition:color .4s ease;
+}
+.measured tbody td:last-child{color:var(--ink-muted)}
+.measured tbody tr:last-child td{border-bottom:0}
+
+ol.stages{list-style:none;counter-reset:st;padding:0;margin:0 0 var(--sp-6)}
+ol.stages > li{
+  counter-increment:st;position:relative;
+  padding-left:58px;padding-bottom:var(--sp-5);margin-bottom:var(--sp-5);
+  border-bottom:1px solid var(--line);
+}
+ol.stages > li:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+ol.stages > li::before{
+  content:counter(st,decimal-leading-zero);
+  position:absolute;left:0;top:-2px;
+  font-family:var(--poster);font-size:1.7rem;line-height:1;
+  color:var(--neon-2);letter-spacing:.02em;
+  transition:color .4s ease;
+}
+.notes h3{
+  font-family:var(--poster);font-weight:400;text-transform:uppercase;
+  font-size:1.22rem;line-height:1.05;letter-spacing:.03em;
+  margin:0 0 var(--sp-3);color:var(--ink);
+}
+.formula{
+  font-family:var(--mono);font-size:.86rem;
+  color:var(--neon);
+  border-left:3px solid var(--neon);
+  padding:var(--sp-2) 0 var(--sp-2) var(--sp-4);
+  margin:0 0 var(--sp-3)!important;
+  overflow-x:auto;max-width:none!important;
+  transition:color .4s ease,border-color .4s ease;
+}
+.notes p{max-width:66ch;margin:0 0 var(--sp-3);font-size:.95rem;line-height:1.6;color:var(--ink)}
+.notes li p:last-child,.blend p:last-child{margin-bottom:0}
+.notes code{font-family:var(--mono);font-size:.85em;color:var(--neon-2);transition:color .4s ease}
+.notes strong{color:var(--neon-2);font-weight:700;transition:color .4s ease}
+.caveat{
+  color:var(--ink-muted)!important;font-size:.88rem!important;
+  border-left:2px solid var(--line);padding-left:var(--sp-4);
+}
+.blend{border:2px solid var(--neon-2);padding:var(--sp-5);transition:border-color .4s ease}
+
+.error{
+  border:2px solid var(--neon-2);border-left-width:8px;
+  padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-5);
+  font-size:.92rem;color:var(--ink);
+}
+</style>
 </head>
-
 <body>
-    <div class="card">
-        <h1>Movie Stylizer</h1>
 
-        <form method="POST" enctype="multipart/form-data">
+<div class="stack">
+<div class="board">
 
-            <label>Select image:</label>
-            <input type="file" name="file" required>
+  <aside class="signboard">
+    <span class="cn" data-for="ml">花樣年華</span>
+    <span class="cn" data-for="fa">墮落天使</span>
+    <span class="seal">198 frames</span>
+  </aside>
 
-            <label>Select movie style:</label>
-            <select name="movie">
-                <option value="fa">Fallen Angels</option>
-                <option value="ml">In The Mood For Love</option>
-            </select>
+  <div class="plate">
 
-            <button type="submit">Apply Style</button>
-        </form>
+    <div class="masthead">
+      <h1>WKW<b>-</b>IFY</h1>
+      <div class="byline">
+        <span class="name">王家衛</span>
+        <span class="rom">Wong Kar&#8209;wai</span>
+      </div>
+    </div>
 
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="cols">
+
+      <div>
+        <fieldset class="field">
+          <legend>Film</legend>
+          <div class="films">
+            <label class="film">
+              <input type="radio" name="movie" value="ml" {% if (film or 'ml') == 'ml' %}checked{% endif %}>
+              <span class="zh">花樣年華</span>
+              <span><span class="en">In the Mood for Love</span><span class="yr">2000</span></span>
+            </label>
+            <label class="film">
+              <input type="radio" name="movie" value="fa" {% if film == 'fa' %}checked{% endif %}>
+              <span class="zh">墮落天使</span>
+              <span><span class="en">Fallen Angels</span><span class="yr">1995</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <span class="label">Photograph</span>
+          <label class="drop">
+            <input type="file" name="file" accept="image/*" required>
+            <span class="fname" data-fname>Choose an image</span>
+            <span class="hint">JPEG or PNG &middot; up to 12 MB</span>
+          </label>
+        </div>
+
+        <button type="submit">Apply the grade</button>
+      </div>
+
+      <div>
         {% if done %}
         <div class="result">
-            <h3>Styled image ready!</h3>
-            <a href="/download">Download image</a><br>
-            <img src="/static/styled.jpg" width="400">
+          <div class="pane">
+            <img src="{{ url_for('static', filename='out/' ~ token ~ '-before.jpg') }}" alt="The photograph before grading">
+            <span class="cap">Before</span>
+          </div>
+          <div class="pane after">
+            <img src="{{ url_for('static', filename='out/' ~ token ~ '-after.jpg') }}" alt="The photograph after grading">
+            <span class="cap">{{ '花樣年華' if film == 'ml' else '墮落天使' }}</span>
+          </div>
+          <a class="download" href="{{ url_for('download', token=token) }}">Download</a>
         </div>
+        {% else %}
+        <div class="empty">Result</div>
         {% endif %}
-    </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<section class="notes">
+  <div class="notes-head">
+    <h2>How it works</h2>
+    <p class="notes-sub">A computational photography project &middot; every number is measured, not chosen</p>
+  </div>
+
+  <p class="notes-intro">We take one frame from each film every 60 seconds. That is 99 frames per film.
+    Averaging four numbers across them gives us the grade.</p>
+
+  <div class="measured">
+    <table>
+      <caption>What the films measure</caption>
+      <thead><tr><th>Statistic</th><th>&#33457;&#27171;&#24180;&#33775;</th><th>&#22530;&#33853;&#22825;&#20351;</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td>R &divide; gray</td><td>1.4046</td><td>1.2717</td><td>Red runs heavy</td></tr>
+        <tr><td>B &divide; gray</td><td>0.5462</td><td>0.7127</td><td>Blue runs light</td></tr>
+        <tr><td>Mean saturation</td><td>165.2</td><td>127.2</td><td>65% and 50% of maximum</td></tr>
+        <tr><td>Mean luminance</td><td>15.9%</td><td>15.9%</td><td>Both films are dark</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ol class="stages">
+    <li>
+      <h3>White balance</h3>
+      <p class="formula">R &larr; R &times; 1.4046 &nbsp;&nbsp; B &larr; B &times; 0.5462</p>
+      <p>Average a whole film and you get its colour cast. We multiply your red and blue channels by
+        the film's numbers.</p>
+      <p class="caveat">This adds the film's cast on top of yours. It assumes your photo starts neutral.</p>
+    </li>
+    <li>
+      <h3>Saturation</h3>
+      <p class="formula">S &larr; S &times; (S<sub>film</sub> &divide; S<sub>photo</sub>)</p>
+      <p>We measure how saturated your photo is, then scale it to match the film. This stage reads your
+        image first, so a vivid photo gets toned down.</p>
+    </li>
+    <li>
+      <h3>Colour grade</h3>
+      <p class="formula">shadows &rarr; green &nbsp;&middot;&nbsp; midtones &rarr; magenta &nbsp;&middot;&nbsp; highlights &rarr; yellow</p>
+      <p>We split the image into dark, mid and bright areas, then tint each one differently. Cool shadows
+        with warm highlights is the oldest trick in grading.</p>
+      <p class="caveat">Both films use the same tints right now.</p>
+    </li>
+    <li>
+      <h3>Contrast curve</h3>
+      <p class="formula">f(x) = x<sup>p</sup> &divide; (x<sup>p</sup> + (1&minus;x)<sup>p</sup>)</p>
+      <p>An S-curve, one per channel. Red is 1.2, green is 1.0 and does not change, blue is 1.4. Blue bends
+        most, so blue shadows go darker and blue highlights go brighter.</p>
+    </li>
+    <li>
+      <h3>Brightness</h3>
+      <p class="formula">&gamma; = log(0.5) &divide; log(L&#772;) &nbsp;&nbsp; out = in<sup>1/&gamma;</sup></p>
+      <p>Both films sit at <strong>15.9%</strong> brightness. They are shot at night, in corridors, through
+        doorways. That gives an exponent of <strong>2.65</strong>, and it does most of the work.</p>
+      <p class="caveat">Also the harshest step. It turns 0.50 into 0.159, so a daylight photo goes to mud.</p>
+    </li>
+  </ol>
+
+  <div class="blend">
+    <h3>Then mix it back</h3>
+    <p>We blend the result with your original, 70 to 30. That brings the brightness back without losing
+      the colour.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+// The film repaints the board and swaps the title on the sign.
+document.querySelectorAll('input[name=movie]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.documentElement.dataset.film = r.value;
+  });
+});
+
+var fileInput = document.querySelector('.drop input');
+var fname = document.querySelector('[data-fname]');
+fileInput.addEventListener('change', function(){
+  fname.textContent = fileInput.files.length ? fileInput.files[0].name : 'Choose an image';
+});
+</script>
 </body>
 </html>

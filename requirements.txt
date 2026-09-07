@@ -1,0 +1,6 @@
+Flask==3.1.0
+# headless: the normal opencv-python wheel links libGL, which no slim
+# container image ships. This is the same library without the GUI module.
+opencv-python-headless==4.12.0.88
+numpy==2.2.6
+gunicorn==23.0.0
